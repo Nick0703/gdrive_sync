@@ -6,7 +6,7 @@ based on [folderclone](https://github.com/Spazzlo/folderclone) and [Multifolderc
 Different from The exist project, This repo use [Rclone](https://rclone.org) to **transfer files from local disk 
 to Google Drive or Team Drive**.
 
-## Requirements for using the scriptsCONTROLLER
+## Requirements for using the scripts
 
 * Python ^3.4 **(Use 64-Bit Python only)**
 * Python Library which list in `requirements.txt`
