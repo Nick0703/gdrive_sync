@@ -14,7 +14,7 @@ to Google Drive or Team Drive**.
 
 ## Setup
 
-> Chinese Version: [使用Service Account突破rclone单账号GD每日750G上传限制](blog.rhilip.info/archives/1135/)
+> Chinese Version: [使用Service Account突破rclone单账号GD每日750G上传限制](//blog.rhilip.info/archives/1135/)
 
 1. setup `multifactory.py`
     1) Head over to <https://console.developers.google.com/> and sign in with your account.

@@ -12,7 +12,7 @@ from logging.handlers import RotatingFileHandler
 # ------------配置项开始------------------
 
 # Account目录
-sa_json_folder = r'/root/folderrclone/accounts'  # 最后没有 '/'，路径中不要有空格
+sa_json_folder = r'/root/folderrclone/accounts'  # 绝对目录，最后没有 '/'，路径中不要有空格
 
 # Rclone运行命令
 cmd_rclone = 'rclone move /home/tomove GDrive:/tmp --drive-server-side-across-configs --rc -v --log-file /tmp/rclone.log'
@@ -145,7 +145,7 @@ if __name__ == '__main__':
                         proc.kill()
                         exit(1)
 
-                    logger.warning('check core/status failed , Wait %s seconds to recheck' % (check_interval,))
+                    logger.warning('check core/status failed, Wait %s seconds to recheck' % (check_interval,))
                     time.sleep(check_interval)
                     continue  # 重新检查
                 else:
@@ -153,13 +153,13 @@ if __name__ == '__main__':
 
                 # 解析 `rclone rc core/stats` 输出
                 response_json = json.loads(response.decode('utf-8').replace('\0', ''))
-                cnt_transfer = response_json['bytes']
+                cnt_transfer = response_json.get('bytes', 0)
 
                 # 输出当前情况
                 logger.info('Transfer Status - Upload: %s GiB, Avg upspeed: %s MiB/s, Transfered: %s.' % (
-                    response_json['bytes'] / pow(1024, 3),
-                    response_json['speed'] / pow(1024, 2),
-                    response_json['transfers']
+                    response_json.get('bytes', 0) / pow(1024, 3),
+                    response_json.get('speed', 0) / pow(1024, 2),
+                    response_json.get('transfers', 0)
                 ))
 
                 # 判断是否应该进行切换
@@ -196,10 +196,11 @@ if __name__ == '__main__':
                     switch_sa_level += 1
 
                     graceful = True
-                    for transfer in response_json['transferring']:
-                        if transfer['bytes'] != 0 and transfer['speed'] > 0:  # 当前还有未完成的传输
-                            graceful = False
-                            break
+                    if response_json.get('transferring', False):
+                        for transfer in response_json['transferring']:
+                            if transfer['bytes'] != 0 and transfer['speed'] > 0:  # 当前还有未完成的传输
+                                graceful = False
+                                break
                     if graceful:
                         should_switch += 1
 
