@@ -45,10 +45,10 @@ instance_config = {}
 sa_jsons = []
 
 # 日志相关
-logging_level = logging.INFO
 logFormatter = logging.Formatter(fmt=logging_format, datefmt=logging_datefmt)
 
-logger = logging.getLogger('')
+logger = logging.getLogger()
+logger.setLevel(logging.NOTSET)
 while logger.handlers:  # Remove un-format logging in Stream, or all of messages are appearing more than once.
     logger.handlers.pop()
 
@@ -57,7 +57,6 @@ if script_log_file:
                                       backupCount=2, maxBytes=5 * 1024 * 1024,
                                       encoding=None, delay=0)
     fileHandler.setFormatter(logFormatter)
-    fileHandler.setLevel(logging_level)
     logger.addHandler(fileHandler)
 
 consoleHandler = logging.StreamHandler()
