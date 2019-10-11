@@ -1,3 +1,5 @@
-*/
+accounts/
 *.json
+.idea/
 token.pickle
+autorclone.conf

@@ -10,16 +10,20 @@ import pickle
 
 successful = []
 
-def _is_success(id,resp,exception):
+
+def _is_success(id, resp, exception):
     global successful
 
     if exception is None:
         successful.append(resp['emailAddress'])
 
-def masshare(drive_id=None,path='accounts',token='token.pickle',credentials='credentials.json'):
+
+def masshare(drive_id=None, path='accounts', token='token.pickle', credentials='credentials.json'):
     global successful
 
-    SCOPES = ["https://www.googleapis.com/auth/drive","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/iam"]
+    SCOPES = ["https://www.googleapis.com/auth/drive",
+              "https://www.googleapis.com/auth/cloud-platform",
+              "https://www.googleapis.com/auth/iam"]
     creds = None
 
     if exists(token):
@@ -41,7 +45,7 @@ def masshare(drive_id=None,path='accounts',token='token.pickle',credentials='cre
 
     print('Fetching emails')
     for i in glob('%s/*.json' % path):
-        accounts_to_add.append(loads(open(i,'r').read())['client_email'])
+        accounts_to_add.append(loads(open(i, 'r').read())['client_email'])
 
     while len(successful) < len(accounts_to_add):
         print('Preparing %d members' % (len(accounts_to_add) - len(successful)))
@@ -56,13 +60,14 @@ def masshare(drive_id=None,path='accounts',token='token.pickle',credentials='cre
         print('Adding')
         batch.execute()
 
+
 if __name__ == '__main__':
     parse = ArgumentParser(description='A tool to add service accounts to a shared drive from a folder containing credential files.')
-    parse.add_argument('--path','-p',default='accounts',help='Specify an alternative path to the service accounts folder.')
-    parse.add_argument('--token',default='token.pickle',help='Specify the pickle token file path.')
-    parse.add_argument('--credentials',default='credentials.json',help='Specify the credentials file path.')
+    parse.add_argument('--path', '-p', default='accounts', help='Specify an alternative path to the service accounts folder.')
+    parse.add_argument('--token', default='token.pickle', help='Specify the pickle token file path.')
+    parse.add_argument('--credentials', default='credentials.json', help='Specify the credentials file path.')
     parsereq = parse.add_argument_group('required arguments')
-    parsereq.add_argument('--drive-id','-d',help='The ID of the Shared Drive.',required=True)
+    parsereq.add_argument('--drive-id', '-d', help='The ID of the Shared Drive.', required=True)
     args = parse.parse_args()
     masshare(
         drive_id=args.drive_id,
