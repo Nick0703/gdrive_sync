@@ -18,7 +18,8 @@ sa_json_folder = r'/root/folderrclone/accounts'  # 最后没有 '/'，路径中�
 cmd_rclone = 'rclone move /home/tomove GDrive:/tmp --drive-server-side-across-configs --rc -v --log-file /tmp/rclone.log'
 
 # 检查rclone间隔 (s)
-check_interval = 10
+check_after_start = 60  # 在拉起rclone进程后，休息xxs后才开始检查rclone状态，防止rclone rc core/stats 报错退出
+check_interval = 10  # 每次进行rclone rc core/stats检查的间隔
 
 # rclone帐号更换监测条件
 switch_sa_rules = {
@@ -110,6 +111,10 @@ if __name__ == '__main__':
             last_sa_index = sa_jsons.index(last_sa)
             sa_jsons = sa_jsons[last_sa_index:] + sa_jsons[:last_sa_index]
 
+        # 修正cmd_rclone 防止 `--rc` 缺失
+        if cmd_rclone.find('--rc') == -1:
+            cmd_rclone += ' --rc'
+
         # 帐号切换循环
         while True:
             logger.info('Switch to next SA..........')
@@ -120,6 +125,8 @@ if __name__ == '__main__':
             # 起一个subprocess调rclone，并附加'--drive-service-account-file'参数
             cmd_rclone_current_sa = cmd_rclone + ' --drive-service-account-file %s' % (current_sa,)
             proc = subprocess.Popen(cmd_rclone_current_sa, shell=True)
+
+            time.sleep(check_after_start)  # 等待以便rclone完全起起来
             logger.info('Run Rclone command Success in pid %s' % (proc.pid,))
 
             # 主进程使用 `rclone rc core/stats` 检查子进程情况
