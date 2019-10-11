@@ -125,6 +125,7 @@ if __name__ == '__main__':
             cmd_rclone_current_sa = cmd_rclone + ' --drive-service-account-file %s' % (current_sa,)
             proc = subprocess.Popen(cmd_rclone_current_sa, shell=True)
 
+            logger.info('Let wait %s seconds to full call rclone subprocess' % (check_after_start,))
             time.sleep(check_after_start)  # 等待以便rclone完全起起来
             logger.info('Run Rclone command Success in pid %s' % (proc.pid,))
 
@@ -134,11 +135,6 @@ if __name__ == '__main__':
             cnt_transfer_last = 0
             cmd_stats = 'rclone rc core/stats'
             while True:
-                # 首先检查rclone是不是已经正常退出了（代表已经完成传输
-                if proc.poll():
-                    logger.info('Rclone may finish all work and exit with code %s', proc.returncode)
-                    exit(0)
-
                 try:
                     response = subprocess.check_output(cmd_stats, shell=True)
                 except subprocess.CalledProcessError as error:
@@ -149,6 +145,8 @@ if __name__ == '__main__':
                         proc.kill()
                         exit(1)
 
+                    logger.warning('check core/status failed , Wait %s seconds to recheck' % (check_interval,))
+                    time.sleep(check_interval)
                     continue  # 重新检查
                 else:
                     cnt_error = 0
