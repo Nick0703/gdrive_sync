@@ -28,6 +28,7 @@ check_interval = 10
 switch_sa_rules = {
     'up_than_750': False,  # 当前帐号已经传过750G
     'zero_transferred_between_check_interval': True,  # 两次检查间隔期间rclone传输的量为0
+    'error_user_rate_limit': True,  # Rclone 提示rate limit错误
     'all_transfers_in_zero': True,  # 当前所有transfers传输size均为0
 }
 
@@ -37,7 +38,7 @@ cmd_rclone = [
     'rclone', 'move', rclone_src, rclone_des,
     # 基本配置项（不要改动）
     '--drive-server-side-across-configs',  # 优先使用Server Side
-    '-rc',  # 启用rc模式，此项不可以删除，否则无法正确切换
+    '--rc',  # 启用rc模式，此项不可以删除，否则无法正确切换
     '-v', '--log-file', rclone_log_file,
     # 其他配置项，默认不启用，为rclone默认参数，请根据自己需要更改
     # '--ignore-existing',
@@ -97,7 +98,6 @@ def get_next_sa_json_path(_last_sa):
     else:
         _last_sa_index = sa_jsons.index(_last_sa)
         next_sa_index = _last_sa_index + 1
-
     # 超过列表长度从头开始取
     if next_sa_index > len(sa_jsons):
         next_sa_index = next_sa_index - len(sa_jsons)
@@ -192,6 +192,14 @@ if __name__ == '__main__':
                     else:
                         cnt_403_retry = 0
                     cnt_transfer_last = cnt_transfer
+
+                # Rclone 直接提示错误403
+                if switch_sa_rules.get('error_user_rate_limit', False):
+                    switch_sa_level += 1
+
+                    last_error = response_json.get('lastError', '')
+                    if last_error.find('userRateLimitExceeded') > -1:
+                        should_switch += 1
 
                 # 检查当前transferring的传输量
                 if switch_sa_rules.get('all_transfers_in_zero', False):
