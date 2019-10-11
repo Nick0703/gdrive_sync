@@ -48,7 +48,8 @@ def _generate_id(prefix='saf-'):
 
 # List projects using service
 def _get_projects(service):
-    return [i['projectId'] for i in service.projects().list().execute()['projects']]
+    return [i['projectId'] for i in service.projects().list().execute()['projects']
+            if i.get('lifecycleState', 'ACTIVE') == 'ACTIVE']
 
 
 # Default batch callback handler
