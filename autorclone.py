@@ -12,14 +12,10 @@ from logging.handlers import RotatingFileHandler
 # ------------配置项开始------------------
 
 # Account目录
-sa_json_folder = r'/home/folderrclone/accounts'  # 最后没有 '/'
+sa_json_folder = r'/root/folderrclone/accounts'  # 最后没有 '/'，路径中不要有空格
 
-# Rclone移动的源和目的地
-rclone_src = '/home/tomove'
-rclone_des = 'GDrive:/tmp'
-
-# Rclone日志文件
-rclone_log_file = r'/tmp/rclone.log'  # Rclone日志输出
+# Rclone运行命令
+cmd_rclone = 'rclone move /home/tomove GDrive:/tmp --drive-server-side-across-configs --rc -v --log-file /tmp/rclone.log'
 
 # 检查rclone间隔 (s)
 check_interval = 10
@@ -31,23 +27,6 @@ switch_sa_rules = {
     'error_user_rate_limit': True,  # Rclone 提示rate limit错误
     'all_transfers_in_zero': True,  # 当前所有transfers传输size均为0
 }
-
-# Rclone运行命令
-cmd_rclone = [
-    # Rclone基本命令
-    'rclone', 'move', rclone_src, rclone_des,
-    # 基本配置项（不要改动）
-    '--drive-server-side-across-configs',  # 优先使用Server Side
-    '--rc',  # 启用rc模式，此项不可以删除，否则无法正确切换
-    '-v', '--log-file', rclone_log_file,
-    # 其他配置项，默认不启用，为rclone默认参数，请根据自己需要更改
-    # '--ignore-existing',
-    # '--fast-list',
-    # '--tpslimit 6',
-    # '--transfers 12',
-    # '--drive-chunk-size 32M',
-    # '--drive-acknowledge-abuse',
-]
 
 # 本脚本临时文件
 instance_lock_path = r'/tmp/autorclone.lock'
@@ -139,7 +118,7 @@ if __name__ == '__main__':
             logger.info('Get SA information, file: %s , email: %s' % (current_sa, get_email_from_sa(current_sa)))
 
             # 起一个subprocess调rclone，并附加'--drive-service-account-file'参数
-            cmd_rclone_current_sa = cmd_rclone + ['--drive-service-account-file', current_sa]
+            cmd_rclone_current_sa = cmd_rclone + ' --drive-service-account-file %s' % (current_sa,)
             proc = subprocess.Popen(cmd_rclone_current_sa, shell=True)
             logger.info('Run Rclone command Success in pid %s' % (proc.pid,))
 
