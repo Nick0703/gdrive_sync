@@ -157,6 +157,13 @@ if __name__ == '__main__':
                 response_json = json.loads(response.decode('utf-8').replace('\0', ''))
                 cnt_transfer = response_json['bytes']
 
+                # 输出当前情况
+                logger.info('Transfer Status - Upload: %s GiB, Avg upspeed: %s MiB/s, Transfered: %s.' % (
+                    response_json['bytes'] / pow(1024, 3),
+                    response_json['speed'] / pow(1024, 2),
+                    response_json['transfers']
+                ))
+
                 # 判断是否应该进行切换
                 should_switch = 0
                 switch_sa_level = 0
@@ -200,11 +207,7 @@ if __name__ == '__main__':
 
                 # 大于设置的更换级别
                 if should_switch >= switch_sa_level:
-                    logger.info('Transfer Limit may hit with Upload: %s GiB, Avg upspeed: %s MiB/s Transfered: %s.' % (
-                        response_json['bytes'] / pow(1024, 3),
-                        response_json['speed'] / pow(1024, 2),
-                        response_json['transfers']
-                    ))
+                    logger.info('Transfer Limit may hit, Kill exist rclone process %s' % proc.pid)
                     proc.kill()  # 杀掉当前rclone进程
                     break  # 退出主进程监测循环，从而切换到下一个帐号
 
