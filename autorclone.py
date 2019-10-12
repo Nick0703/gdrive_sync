@@ -34,14 +34,14 @@ switch_sa_rules = {
     'all_transfers_in_zero': True,  # 当前所有transfers传输size均为0
 }
 
-# TODO rclone帐号切换方法 (runtime or config)
+# rclone帐号切换方法 (runtime or config)
 # runtime 是修改启动rclone时附加的 `--drive-service-account-file` 参数
-# config 是修改rclone的配置文件 `$HOME/.config/rclone/rclone.conf` ，此时你需要指定后面的rclone配置参数参数
+# config  是修改rclone的配置文件 `$HOME/.config/rclone/rclone.conf` ，此时你需要指定后面的rclone配置参数参数
 switch_sa_way = 'runtime'
 
 # rclone配置参数 （当且仅当 switch_sa_way 为 `config` 时使用，且需要修改）
 rclone_config_path = '/root/.config/rclone/rclone.conf'  # Rclone 配置文件位置
-rclone_dest_name = 'GDrive'  # Rclone目的地名称
+rclone_dest_name = 'GDrive'  # Rclone目的地名称（与cmd_rclone中对应相同，并保证SA均已添加）
 
 # 本脚本临时文件
 instance_lock_path = r'/tmp/autorclone.lock'
@@ -102,8 +102,12 @@ def switch_sa_by_config(cur_sa):
     config = configparser.ConfigParser()
     config.read(rclone_config_path)
 
+    if rclone_dest_name not in config:
+        logger.critical('Can\'t find section %s in your rclone.conf (path: %s)', (rclone_dest_name, rclone_config_path))
+        exit(1)
+
     # 更改SA信息
-    sa_in_config = config[rclone_dest_name]['service_account_file']
+    sa_in_config = config[rclone_dest_name].get('service_account_file', '')
     config[rclone_dest_name]['service_account_file'] = cur_sa
     logger.info('Change rclone.conf SA information from %s to %s' % (sa_in_config, cur_sa))
 
@@ -111,7 +115,7 @@ def switch_sa_by_config(cur_sa):
     with open(rclone_config_path, 'w') as configfile:
         config.write(configfile)
 
-    logger.info('Change rclone.conf SA information Success')
+    logger.info('Change SA information in rclone.conf Success')
 
 
 def get_email_from_sa(sa):
