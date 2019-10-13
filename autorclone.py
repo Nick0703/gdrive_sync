@@ -30,8 +30,8 @@ check_interval = 10  # 主进程每次进行rclone rc core/stats检查的间隔
 switch_sa_rules = {
     'up_than_750': False,  # 当前帐号已经传过750G
     'zero_transferred_between_check_interval': True,  # 两次检查间隔期间rclone传输的量为0
-    'error_user_rate_limit': True,  # Rclone 直接提示rate limit错误
-    'all_transfers_in_zero': True,  # 当前所有transfers传输size均为0
+    'error_user_rate_limit': False,  # Rclone 直接提示rate limit错误
+    'all_transfers_in_zero': False,  # 当前所有transfers传输size均为0
 }
 
 # rclone帐号切换方法 (runtime or config)
