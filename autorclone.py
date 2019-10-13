@@ -122,6 +122,17 @@ def get_email_from_sa(sa):
     return json.load(open(sa, 'r'))['client_email']
 
 
+# 强行杀掉Rclone
+def force_kill_rclone_subproc_by_parent_pid(sh_pid):
+    if psutil.pid_exists(sh_pid):
+        sh_proc = psutil.Process(sh_pid)
+        logger.info('Get The Process information - pid: %s, name: %s', (sh_pid, sh_proc.name()))
+        for child_proc in sh_proc.children():
+            if child_proc.name().find('rclone') > -1:
+                logger.info('Force Killed rclone process which pid: %s' % child_proc.pid)
+                child_proc.kill()
+
+
 if __name__ == '__main__':
     # 单例模式 (￣y▽,￣)╭
     instance_check = filelock.FileLock(instance_lock_path)
@@ -138,16 +149,11 @@ if __name__ == '__main__':
             config_raw = open(instance_config_path).read()
             instance_config = json.loads(config_raw)
 
-        # 对上次记录的pid信息进行检查，并强行杀掉，防止孤儿进程问题
+        # 对上次记录的pid信息进行检查
         if 'last_pid' in instance_config:
             last_pid = instance_config.get('last_pid')
-            logger.debug('Last PID exist in config, Start to check if it is a rclone process and still alive')
-            if psutil.pid_exists(last_pid):
-                last_proc = psutil.Process(last_pid)
-                logger.error('The Last PID information - pid: %s, name: %s', (last_pid, last_proc.name()))
-                if last_proc.name().find('rclone') > -1:
-                    logger.fatal('The last process seems still alive, Force Killed')
-                    last_proc.kill()
+            logger.debug('Last PID exist, Start to check if it is still alive')
+            force_kill_rclone_subproc_by_parent_pid(last_pid)
 
         # 对上次记录的sa信息进行检查，如果有的话，重排sa_jsons
         # 这样我们就每次都从一个新的750G开始了
@@ -181,10 +187,15 @@ if __name__ == '__main__':
             proc = subprocess.Popen(cmd_rclone_current_sa, shell=True)
 
             # 等待，以便rclone完全起起来
-            logger.info('Let wait %s seconds to full call rclone subprocess' % (check_after_start,))
+            logger.info('Wait %s seconds to full call rclone command: %s' % (check_after_start, cmd_rclone_current_sa))
             time.sleep(check_after_start)
-            logger.info('Run Rclone command: `%s` Success in pid %s' % (cmd_rclone_current_sa, proc.pid,))
-            write_config('last_pid', proc.pid)  # 记录pid信息
+
+            # 记录pid信息
+            # 注意，因为subprocess首先起sh，然后sh再起rclone，所以此处记录的实际是sh的pid信息
+            # proc.pid + 1 在一般情况下就是rclone进程的pid，但不确定
+            # 所以一定要用 force_kill_rclone_subproc_by_parent_pid(sh_pid) 方法杀掉rclone
+            write_config('last_pid', proc.pid)
+            logger.info('Run Rclone command Success in pid %s' % (proc.pid + 1))
 
             # 主进程使用 `rclone rc core/stats` 检查子进程情况
             cnt_error = 0
@@ -270,8 +281,8 @@ if __name__ == '__main__':
 
                 # 大于设置的更换级别
                 if should_switch >= switch_sa_level:
-                    logger.info('Transfer Limit may hit, Kill exist rclone process %s' % proc.pid)
-                    proc.kill()  # 杀掉当前rclone进程
+                    logger.info('Transfer Limit may hit, Try to Switch..........' % proc.pid)
+                    force_kill_rclone_subproc_by_parent_pid(proc.pid)  # 杀掉当前rclone进程
                     break  # 退出主进程监测循环，从而切换到下一个帐号
 
                 time.sleep(check_interval)
