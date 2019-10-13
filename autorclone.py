@@ -27,10 +27,11 @@ check_after_start = 60  # 在拉起rclone进程后，休息xxs后才开始检查
 check_interval = 10  # 主进程每次进行rclone rc core/stats检查的间隔
 
 # rclone帐号更换监测条件
+switch_sa_level = 1  # 需要满足的规则条数，数字越大切换条件越严格，一定小于下面True（即启用）的数量，即 1 - 4(max)
 switch_sa_rules = {
     'up_than_750': False,  # 当前帐号已经传过750G
-    'zero_transferred_between_check_interval': True,  # 两次检查间隔期间rclone传输的量为0
     'error_user_rate_limit': False,  # Rclone 直接提示rate limit错误
+    'zero_transferred_between_check_interval': True,  # 100次检查间隔期间rclone传输的量为0
     'all_transfers_in_zero': False,  # 当前所有transfers传输size均为0
 }
 
@@ -232,41 +233,36 @@ if __name__ == '__main__':
 
                 # 判断是否应该进行切换
                 should_switch = 0
-                switch_sa_level = 0
+                switch_reason = 'Switch Reason: '
 
                 # 检查当前总上传是否超过 750 GB
                 if switch_sa_rules.get('up_than_750', False):
-                    switch_sa_level += 1
-
                     if cnt_transfer > 750 * pow(1000, 3):  # 这里是 750GB 而不是 750GiB
                         should_switch += 1
+                        switch_reason += 'Rule `up_than_750` hit, '
 
                 # 检查监测期间rclone传输的量
                 if switch_sa_rules.get('zero_transferred_between_check_interval', False):
-                    switch_sa_level += 1
-
                     if cnt_transfer - cnt_transfer_last == 0:  # 未增加
                         cnt_403_retry += 1
-                        if cnt_403_retry > 100:  # 超过100次检查均未增加
+                        if cnt_403_retry % 10 == 0:
+                            logger.warning('Rclone seems not transfer in %s checks' % cnt_403_retry)
+                        if cnt_403_retry >= 100:  # 超过100次检查均未增加
                             should_switch += 1
+                            switch_reason += 'Rule `zero_transferred_between_check_interval` hit, '
                     else:
                         cnt_403_retry = 0
                     cnt_transfer_last = cnt_transfer
 
-                # Rclone 直接提示错误403
+                # Rclone 直接提示错误403 ratelimitexceed
                 if switch_sa_rules.get('error_user_rate_limit', False):
-                    switch_sa_level += 1
-
                     last_error = response_json.get('lastError', '')
-                    # 考虑可能出现其他lastError覆盖ratelimitexceed，只要出现一次userratelimit就不再做检查
-                    if cnt_get_rate_limit or last_error.find('userRateLimitExceeded') > -1:
-                        cnt_get_rate_limit = True
+                    if last_error.find('userRateLimitExceeded') > -1:
                         should_switch += 1
+                        switch_reason += 'Rule `error_user_rate_limit` hit, '
 
                 # 检查当前transferring的传输量
                 if switch_sa_rules.get('all_transfers_in_zero', False):
-                    switch_sa_level += 1
-
                     graceful = True
                     if response_json.get('transferring', False):
                         for transfer in response_json['transferring']:
@@ -278,10 +274,11 @@ if __name__ == '__main__':
                                 break
                     if graceful:
                         should_switch += 1
+                        switch_reason += 'Rule `all_transfers_in_zero` hit, '
 
                 # 大于设置的更换级别
                 if should_switch >= switch_sa_level:
-                    logger.info('Transfer Limit may hit, Try to Switch..........' % proc.pid)
+                    logger.info('Transfer Limit may hit (%s), Try to Switch..........' % switch_reason)
                     force_kill_rclone_subproc_by_parent_pid(proc.pid)  # 杀掉当前rclone进程
                     break  # 退出主进程监测循环，从而切换到下一个帐号
 
