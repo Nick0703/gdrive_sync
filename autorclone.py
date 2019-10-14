@@ -127,7 +127,7 @@ def get_email_from_sa(sa):
 def force_kill_rclone_subproc_by_parent_pid(sh_pid):
     if psutil.pid_exists(sh_pid):
         sh_proc = psutil.Process(sh_pid)
-        logger.info('Get The Process information - pid: %s, name: %s', (sh_pid, sh_proc.name()))
+        logger.info('Get The Process information - pid: %s, name: %s' % (sh_pid, sh_proc.name()))
         for child_proc in sh_proc.children():
             if child_proc.name().find('rclone') > -1:
                 logger.info('Force Killed rclone process which pid: %s' % child_proc.pid)
@@ -172,7 +172,7 @@ if __name__ == '__main__':
         # 帐号切换循环
         while True:
             logger.info('Switch to next SA..........')
-            current_sa = get_next_sa_json_path(last_sa)
+            last_sa = current_sa = get_next_sa_json_path(last_sa)
             write_config('last_sa', current_sa)
             logger.info('Get SA information, file: %s , email: %s' % (current_sa, get_email_from_sa(current_sa)))
 
