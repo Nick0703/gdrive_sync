@@ -1,7 +1,7 @@
 # Autorclone 
 
 A python script lists Which Use Service Account to bypass the 750G upload file size limit on Google Drive
-based on [folderclone](https://github.com/Spazzlo/folderclone) and [Multifolderclone](https://github.com/SameerkumarP/Multifolderclone)
+based on [folderclone](https://github.com/Spazzlo/folderclone)
 
 Different from The exist project, This repo use [Rclone](https://rclone.org) to **transfer files from local disk 
 to Google Drive or Team Drive**.
