@@ -31,4 +31,4 @@ to Google Drive or Team Drive**.
 
 3. Steps for `autorclone.py`
     1) Change script config at the beginning of file.
-    2) Add to crontab like `0 */1 * * * /usr/bin/python3 /path/to/autorclone.py`
+    2) Run it manually in `screen` or Add to crontab like `0 */1 * * * /usr/bin/python3 /path/to/autorclone.py`
