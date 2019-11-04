@@ -51,7 +51,7 @@ instance_config_path = r'/tmp/autorclone.conf'
 # 本脚本运行日志
 script_log_file = r'/tmp/autorclone.log'
 logging_datefmt = "%m/%d/%Y %I:%M:%S %p"
-logging_format = "%(asctime)s - %(levelname)s - %(threadName)s - %(funcName)s - %(message)s"
+logging_format = "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
 
 # ------------配置项结束------------------
 
