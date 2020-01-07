@@ -20,7 +20,7 @@ sa_json_folder = r'/root/folderrclone/accounts'  # Absolute directory without '/
 # 1. Fill in what you are using / want to use, here is move, it can also be copy / sync ...
 # 2. It is recommended to add `--rc`, it is fine if you don't add it, the script will be added automatically later
 # 3. Because I can’t afford screen, if you want to follow the running status of rclone, be sure to use `--log-file` to redirect rclone output to a file
-cmd_rclone = 'rclone move /home/tomove GDrive:/tmp --drive-server-side-across-configs --no-update-modtime -v --log-file /tmp/rclone.log'
+cmd_rclone = 'rclone sync pcs: backup: --drive-server-side-across-configs --no-update-modtime -v --log-file /tmp/rclone.log'
 
 # Check rclone interval (s)
 check_after_start = 60  # After the rclone process is started, check the rclone status after resting xxs to prevent rclone rc core / stats from exiting with an error.
