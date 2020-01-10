@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Reset_Color='\033[0m'g
+Reset_Color='\033[0m'
 Red='\033[0;31m'
 Green='\033[0;32m'
 Blue='\033[0;34m'
@@ -10,7 +10,7 @@ Cyan='\033[0;36m'
 help()
 {
    echo ""
-   echo "Usage: $0 -s remoteA -d remoteB -a 1 -b 600"
+   echo "Usage: $0 -s remoteA -d remoteB -a 1 -b 600 -p /home/user/service_accounts"
    echo -e "\t-s Name of the source remote"
    echo -e "\t-d Name of the destination remote"
    echo -e "\t-a First service account #, e.g 1 for sa_1 or 35 for sa_35"
