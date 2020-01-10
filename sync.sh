@@ -8,7 +8,7 @@ help()
    echo -e "\t-d Name of the destination remote"
    echo -e "\t-a First service account #, e.g 1 for sa_1 or 35 for sa_35"
    echo -e "\t-b Last service account #, e.g 90 for sa_90 or 600 for sa_600"
-   echo -e "\t-p Path of the service accounts json files, absolute path"
+   echo -e "\t-p Path of the service accounts json files, absolute path without / at the end"
    echo -e "\t-v Enable rclone basic logging (Optional), /tmp/gdrive_sync.log"
    echo -e "\t-m Enable rclone detailed logging (Optional), /tmp_gdrive_sync.log"
    exit 1
