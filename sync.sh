@@ -3,9 +3,6 @@
 Reset_Color='\033[0m'
 Red='\033[0;31m'
 Green='\033[0;32m'
-Blue='\033[0;34m'
-Purple='\033[0;35m'
-Cyan='\033[0;36m'
 
 help()
 {
@@ -55,8 +52,8 @@ rclone_vLog=" -v --log-file=/tmp/gdrive_sync.log"
 rclone_vvLog=" -vv --log-file=/tmp/gdrive_sync.log"
 
 #Loop until the last service account
+echo -e $Green"Starting the Sync"$Reset_Color
 while [ $opt_startSa -lt $opt_endSa ]; do
-	echo -e "Starting the Sync"
 	echo "Using Service Account $opt_startSa"
 	
 	if [ "$opt_basicLog" -ne 0 ]; then # Basic Logging
