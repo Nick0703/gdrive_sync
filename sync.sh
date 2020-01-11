@@ -7,7 +7,7 @@ Green='\033[0;32m'
 help()
 {
    echo ""
-   echo "Usage: $0 -s remoteA -d remoteB -a 1 -b 600 -p /home/user/service_accounts"
+   echo "Usage: $0 -s remoteA: -d remoteB: -a 1 -b 600 -p /home/user/service_accounts"
    echo -e "\t-s Name of the source remote"
    echo -e "\t-d Name of the destination remote"
    echo -e "\t-a First service account #, e.g 1 for sa_1 or 35 for sa_35"
@@ -43,16 +43,21 @@ then
    help
 fi
 
-rclone_cmd="/usr/bin/rclone sync $opt_source: $opt_destination: \
+rclone_cmd="/usr/bin/rclone sync $opt_source $opt_destination \
 --drive-server-side-across-configs -c \
 --fast-list --no-update-modtime --max-backlog 220000 \
 --tpslimit 6 --checkers 128 --max-transfer 750G --stats 5s \
---drive-service-account-file=$opt_pathSa/sa-$opt_startSa.json"
+--drive-service-account-file=$opt_pathSa""sa-$opt_startSa.json"
 rclone_vLog=" -v --log-file=/tmp/gdrive_sync.log"
 rclone_vvLog=" -vv --log-file=/tmp/gdrive_sync.log"
 
 #Loop until the last service account
 echo -e $Green"Starting the Sync"$Reset_Color
+if [ "$opt_basicLog" -ne 0 ] || [ "$opt_advLog" -ne 0 ]; then
+	echo "Logging enabled, file in /tmp/gdrive_sync.log"
+	echo ""
+fi
+
 while [ $opt_startSa -lt $opt_endSa ]; do
 	echo "Using Service Account $opt_startSa"
 	
