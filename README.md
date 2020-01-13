@@ -10,12 +10,12 @@ This script will use rclone to sync in-between two different Google Drives using
 
 ## Usage
 
-**sync.sh -s remoteA -d remoteB -a 1 -b 600 -p /home/user/service_accounts**
+**sync.sh -s remoteA -d remoteB -a 1 -b 600 -p /home/user/service_accounts/**
 
 	-s Name of the source remote
 	-d Name of the destination remote
 	-a First service account #, e.g 1 for sa_1 or 35 for sa_35
 	-b Last service account #, e.g 90 for sa_90 or 600 for sa_600
-	-p Path of the service accounts json files, absolute path without / at the end
+	-p Path of the service accounts json files (Absolute path)
     -v Enable rclone basic logging (Optional), /tmp/gdrive_sync.log
 	-m Enable rclone detailed logging (Optional), /tmp_gdrive_sync.log
