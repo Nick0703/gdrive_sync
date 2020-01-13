@@ -1,5 +1,5 @@
 #!/bin/bash
-
+start="$(date -u +%s)"
 Reset_Color='\033[0m'
 Red='\033[0;31m'
 Green='\033[0;32m'
@@ -7,14 +7,17 @@ Green='\033[0;32m'
 help()
 {
    echo ""
-   echo "Usage: $0 -s remoteA: -d remoteB: -a 1 -b 600 -p /home/user/sa/"
-   echo -e "\t-s Name of the source remote"
-   echo -e "\t-d Name of the destination remote"
-   echo -e "\t-a First service account #, e.g 1 for sa_1 or 35 for sa_35"
-   echo -e "\t-b Last service account #, e.g 90 for sa_90 or 600 for sa_600"
+   echo "Usage: $0 -s remoteA: -d remoteB: -a 1 -b 90 -p /home/user/sa/"
+   echo -e "\t-s Name of the source remote or specific folder"
+   echo -e "\t   E.g remoteA: or remoteA:FolderB"
+   echo -e "\t-d Name of the destination remote or specific folder"
+   echo -e "\t   E.g remoteB: or remoteB:FolderA"
+   echo -e "\t-a First service account # to use, e.g 1 for sa_1"
+   echo -e "\t-b Last service account # to stop at, e.g 90 for sa_90"
    echo -e "\t-p Path of the service accounts json files"$Red" (Absolute path)"$Reset_Color
    echo -e "\t-v Enable rclone basic logging "$Green"(Optional)"$Reset_Color", /tmp/gdrive_sync.log"
    echo -e "\t-m Enable rclone detailed logging "$Green"(Optional)"$Reset_Color"/tmp_gdrive_sync.log"
+   echo -e "\t   Please note that enabling this flag will create a large file."
    exit 1
 }
 
@@ -46,7 +49,7 @@ fi
 rclone_cmd="/usr/bin/rclone sync $opt_source $opt_destination \
 --drive-server-side-across-configs -c \
 --fast-list --no-update-modtime --max-backlog 220000 \
---tpslimit 6 --checkers 128 --max-transfer 750G --stats 5s \
+--tpslimit 6 --checkers 128 --max-transfer 735G --stats 5s \
 --drive-service-account-file=$opt_pathSa""sa-$opt_startSa.json"
 rclone_vLog=" -v --log-file=/tmp/gdrive_sync.log"
 rclone_vvLog=" -vv --log-file=/tmp/gdrive_sync.log"
@@ -72,3 +75,7 @@ while [ $opt_startSa -lt $opt_endSa ]; do
 	let opt_startSa++
 
 done
+end="$(date -u +%s)"
+tmin=$(( (end-start)/60 ))
+tsec=$(( (end-start)%60 ))
+echo -e $Green"Total elapse time: $tmin minutes $tsec seconds"
