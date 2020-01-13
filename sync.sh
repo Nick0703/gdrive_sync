@@ -7,12 +7,12 @@ Green='\033[0;32m'
 help()
 {
    echo ""
-   echo "Usage: $0 -s remoteA: -d remoteB: -a 1 -b 600 -p /home/user/service_accounts/"
+   echo "Usage: $0 -s remoteA: -d remoteB: -a 1 -b 600 -p /home/user/sa/"
    echo -e "\t-s Name of the source remote"
    echo -e "\t-d Name of the destination remote"
    echo -e "\t-a First service account #, e.g 1 for sa_1 or 35 for sa_35"
    echo -e "\t-b Last service account #, e.g 90 for sa_90 or 600 for sa_600"
-   echo -e "\t-p Path of the service accounts json files (Absolute path)"
+   echo -e "\t-p Path of the service accounts json files"$Red" (Absolute path)"$Reset_Color
    echo -e "\t-v Enable rclone basic logging "$Green"(Optional)"$Reset_Color", /tmp/gdrive_sync.log"
    echo -e "\t-m Enable rclone detailed logging "$Green"(Optional)"$Reset_Color"/tmp_gdrive_sync.log"
    exit 1

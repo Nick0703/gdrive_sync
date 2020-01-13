@@ -10,7 +10,7 @@ This script will use rclone to sync in-between two different Google Drives using
 
 ## Usage
 
-**sync.sh -s remoteA -d remoteB -a 1 -b 600 -p /home/user/service_accounts/**
+**sync.sh -s remoteA -d remoteB -a 1 -b 600 -p /home/user/sa/**
 
 	-s Name of the source remote
 	-d Name of the destination remote
