@@ -49,7 +49,7 @@ fi
 rclone_cmd="/usr/bin/rclone sync $opt_source $opt_destination \
 --drive-server-side-across-configs -c \
 --fast-list --no-update-modtime --max-backlog 220000 \
---tpslimit 6 --checkers 128 --max-transfer 735G --stats 5s \
+--tpslimit 3 --checkers 3 --max-transfer 735G --stats 5s \
 --drive-service-account-file=$opt_pathSa""sa-$opt_startSa.json"
 rclone_vLog=" -v --log-file=/tmp/gdrive_sync.log"
 rclone_vvLog=" -vv --log-file=/tmp/gdrive_sync.log"
