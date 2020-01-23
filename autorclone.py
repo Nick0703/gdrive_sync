@@ -17,14 +17,14 @@ from logging.handlers import RotatingFileHandler
 sa_json_folder = r'/root/folderrclone/accounts'  # Absolute directory without '/' at the end and no spaces in the path
 
 # Rclone run command
-# 1. Fill in what you are using / want to use, here is move, it can also be copy / sync ...
-# 2. It is recommended to add `--rc`, it is fine if you don't add it, the script will be added automatically later
-# 3. Because I can’t afford screen, if you want to follow the running status of rclone, be sure to use `--log-file` to redirect rclone output to a file
-cmd_rclone = 'rclone sync pcs: backup: --drive-server-side-across-configs --no-update-modtime -v --log-file /tmp/rclone.log'
+# 1. Fill in what you are using or want to use. It can also be move, copy or sync ...
+# 2. It is recommended to add '--rc', it is fine if you don't add it, the script will automatically add it 
+# 3. To follow the output of rclone, run 'tail -f /tmp/rclone.log' in another terminal.
+cmd_rclone = 'rclone sync source: backup: --drive-server-side-across-configs --no-update-modtime -v --log-file /tmp/rclone.log'
 
 # Check rclone interval (s)
-check_after_start = 60  # After the rclone process is started, check the rclone status after resting xxs to prevent rclone rc core / stats from exiting with an error.
-check_interval = 10  # Every time the main process checks rclone rc core / stats
+check_after_start = 60  # After the rclone process has started, check the rclone status after xx seconds to prevent 'rclone rc core/stats' from exiting with an error.
+check_interval = 10  # Main process, run a check for 'rclone rc core/stats' every xx seconds
 
 # rclone account change monitoring conditions
 switch_sa_level = 1  # The number of rules to be met. The larger the number is, the stricter the switching conditions must be.
@@ -36,19 +36,19 @@ switch_sa_rules = {
 }
 
 # rclone account switching method (runtime or config)
-# runtime is to modify the `--drive-service-account-file 'parameter attached when starting rclone
-# config is to modify the rclone configuration file `$ HOME / .config / rclone / rclone.conf`, at this time you need to specify the rclone configuration parameter parameters later
+# runtime is to modify the rclone command and add the follow parameter to it '--drive-service-account-file'
+# config is to modify the rclone configuration file '$HOME/.config/rclone/rclone.conf'. You need to specify the rclone configuration file location below.
 switch_sa_way = 'runtime'
 
-# rclone configuration parameter (used if and only if switch_sa_way is `config`, and needs to be modified)
+# rclone configuration parameter (Used if and only if switch_sa_way is set to'config')
 rclone_config_path = '/root/.config/rclone/rclone.conf'  # Rclone configuration file location
 rclone_dest_name = 'GDrive'  # Rclone destination name (same as corresponding in cmd_rclone, and ensure that SA has been added
 
-# This script temporary file
+# The script's temporary file
 instance_lock_path = r'/tmp/autorclone.lock'
 instance_config_path = r'/tmp/autorclone.conf'
 
-# This script runs logs
+# The script's run log
 script_log_file = r'/tmp/autorclone.log'
 logging_datefmt = "%m/%d/%Y %I:%M:%S %p"
 logging_format = "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
@@ -64,7 +64,7 @@ logFormatter = logging.Formatter(fmt=logging_format, datefmt=logging_datefmt)
 
 logger = logging.getLogger()
 logger.setLevel(logging.NOTSET)
-while logger.handlers:  # Remove un-format logging in Stream, or all of messages are appearing more than once.
+while logger.handlers:  # Remove un-format logging in Stream, or all of messages will appear more than once.
     logger.handlers.pop()
 
 if script_log_file:
@@ -87,7 +87,7 @@ def write_config(name, value):
 
 # Get the next Service Account Credentials JSON file path
 def get_next_sa_json_path(_last_sa):
-    if _last_sa not in sa_jsons:  # Empty string or wrong sa_json_path, fetched from scratch
+    if _last_sa not in sa_jsons:  # Empty string or wrong sa_json_path
         next_sa_index = 0
     else:
         _last_sa_index = sa_jsons.index(_last_sa)
@@ -135,7 +135,6 @@ def force_kill_rclone_subproc_by_parent_pid(sh_pid):
 
 
 if __name__ == '__main__':
-    # Singleton pattern (￣y▽,￣)╭
     instance_check = filelock.FileLock(instance_lock_path)
     with instance_check.acquire(timeout=0):
         # Load account information
@@ -181,7 +180,7 @@ if __name__ == '__main__':
                 switch_sa_by_config(current_sa)
                 cmd_rclone_current_sa = cmd_rclone
             else:
-                # By default, it is treated as `runtime`, with the '--drive-service-account-file' parameter appended
+                # By default, it is treated as 'runtime', with the '--drive-service-account-file' parameter appended
                 cmd_rclone_current_sa = cmd_rclone + ' --drive-service-account-file %s' % (current_sa,)
 
             # Start a subprocess to rclone
@@ -220,7 +219,7 @@ if __name__ == '__main__':
                 else:
                     cnt_error = 0
 
-                # Parse `rclone rc core / stats` output
+                # Parse 'rclone rc core/stats' output
                 response_json = json.loads(response.decode('utf-8').replace('\0', ''))
                 cnt_transfer = response_json.get('bytes', 0)
 
