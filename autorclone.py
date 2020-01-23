@@ -20,7 +20,7 @@ sa_json_folder = r'/root/folderrclone/accounts'  # Absolute directory without '/
 # 1. Fill in what you are using or want to use. It can also be move, copy or sync ...
 # 2. It is recommended to add '--rc', it is fine if you don't add it, the script will automatically add it 
 # 3. To follow the output of rclone, run 'tail -f /tmp/rclone.log' in another terminal.
-cmd_rclone = 'rclone sync source: backup: --drive-server-side-across-configs --no-update-modtime -v --log-file /tmp/rclone.log'
+cmd_rclone = 'rclone sync source: backup: --drive-server-side-across-configs --tpslimit 5 --max-backlog 2000000 --no-update-modtime -v --log-file /tmp/rclone.log'
 
 # Check rclone interval (s)
 check_after_start = 60  # After the rclone process has started, check the rclone status after xx seconds to prevent 'rclone rc core/stats' from exiting with an error.
