@@ -6,21 +6,43 @@ import psutil
 import logging
 import subprocess
 import configparser
+import argparse
 
 import filelock
 
 from logging.handlers import RotatingFileHandler
 
-# ------------ Start of configuration items ------------------
+def parse_args():
+    parser = argparse.ArgumentParser(description="Move/Sync or Copy from source remote or local path "
+                                                 "to destination remote.")
+    parser.add_argument('-s', '--source', type=str, required=True,
+                        help='The source remote name or local path.')
 
-# Account directory
-sa_json_folder = r'/root/folderrclone/accounts'  # Absolute directory without '/' at the end and no spaces in the path
+    parser.add_argument('-d', '--destination', type=str, required=True,
+                        help='The destination remote name.')
+
+    parser.add_argument('-sa', '--service_account', type=str, default="service_accounts",
+                        help='The folder path of json files for service accounts.')
+
+    parser.add_argument('-p', '--port', type=int, default=5572,
+                        help='The port to run rclone rc. Set it to different one if you want to run other instance.')
+
+    parser.add_argument('-c', '--rclone_config', type=str,
+                        help='Config file path of rclone')
+
+    args = parser.parse_args()
+    return args
+
+# Initialize the arguments    
+args = parse_args()
+
+# ------------ Start of configuration items ------------------
 
 # Rclone run command
 # 1. Fill in what you are using or want to use. It can also be move, copy or sync ...
 # 2. It is recommended to add '--rc', it is fine if you don't add it, the script will automatically add it 
 # 3. To follow the output of rclone, run 'tail -f /tmp/rclone.log' in another terminal.
-cmd_rclone = 'rclone sync source: backup: --drive-server-side-across-configs --tpslimit 5 --max-backlog 2000000 --no-update-modtime -v --log-file /tmp/rclone.log'
+cmd_rclone = "rclone sync {} {} --drive-server-side-across-configs --tpslimit 5 --max-backlog 2000000 --no-update-modtime -v --log-file /tmp/rclone.log".format(args.source, args.destination)
 
 # Check rclone interval (s)
 check_after_start = 60  # After the rclone process has started, check the rclone status after xx seconds to prevent 'rclone rc core/stats' from exiting with an error.
@@ -42,7 +64,7 @@ switch_sa_way = 'runtime'
 
 # rclone configuration parameter (Used if and only if switch_sa_way is set to'config')
 rclone_config_path = '/root/.config/rclone/rclone.conf'  # Rclone configuration file location
-rclone_dest_name = 'GDrive'  # Rclone destination name (same as corresponding in cmd_rclone, and ensure that SA has been added
+rclone_dest_name = 'GDrive'  # Rclone destination name (same as corresponding in cmd_rclone, and ensure that SA has been added)
 
 # The script's temporary file
 instance_lock_path = r'/tmp/autorclone.lock'
@@ -138,7 +160,7 @@ if __name__ == '__main__':
     instance_check = filelock.FileLock(instance_lock_path)
     with instance_check.acquire(timeout=0):
         # Load account information
-        sa_jsons = glob.glob(os.path.join(sa_json_folder, '*.json'))
+        sa_jsons = glob.glob(os.path.join(args.service_account, '*.json'))
         if len(sa_jsons) == 0:
             logger.error('No Service Account Credentials JSON file exists.')
             exit(1)
@@ -167,6 +189,9 @@ if __name__ == '__main__':
         if cmd_rclone.find('--rc') == -1:
             logger.warning('Lost important param `--rc` in rclone commands, AutoAdd it.')
             cmd_rclone += ' --rc'
+
+        # Rclone port number
+        cmd_rclone += " --rc-addr=:{}".format(args.port)
 
         # Account switching cycle
         while True:
@@ -204,7 +229,8 @@ if __name__ == '__main__':
             cnt_get_rate_limit = False
             while True:
                 try:
-                    response = subprocess.check_output('rclone rc core/stats', shell=True)
+                    rclone_rc_cmd = "rclone rc core/stats --rc-addr=:{}".format(args.port)
+                    response = subprocess.check_output(rclone_rc_cmd, shell=True)
                 except subprocess.CalledProcessError as error:
                     cnt_error = cnt_error + 1
                     err_msg = 'check core/stats failed for %s times,' % cnt_error
