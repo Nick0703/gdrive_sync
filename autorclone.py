@@ -46,11 +46,11 @@ check_after_start = 60  # After the rclone process has started, check the rclone
 check_interval = 10  # Main process, run a check for 'rclone rc core/stats' every xx seconds
 
 # rclone account change monitoring conditions
-switch_sa_level = 1  # The number of rules to be met. The larger the number is, the stricter the switching conditions must be.
+switch_sa_level = 2  # The number of rules to be met. The larger the number is, the stricter the switching conditions must be.
 switch_sa_rules = {
-    'up_than_750': False,  # The current account has been passed 750G
-    'error_user_rate_limit': False,  # Rclone directly prompt rate limit error
-    'zero_transferred_between_check_interval': True,  # 100 rclone transfers during the 100 check interval
+    'up_than_750': True,  # The current account has been passed 750G
+    'error_user_rate_limit': True,  # Rclone directly prompt rate limit error
+    'zero_transferred_between_check_interval': False,  # 100 rclone transfers during the 100 check interval
     'all_transfers_in_zero': False,  # All transfers currently have a size of 0
 }
 
