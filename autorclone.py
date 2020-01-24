@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument('-d', '--destination', type=str, required=True,
                         help='The destination remote name.')
 
-    parser.add_argument('-sa', '--service_account', type=str, default="service_accounts",
+    parser.add_argument('-sa', '--service_accounts', type=str, default="service_accounts",
                         help="The folder path of the json files for service accounts without '/' at the end.")
 
     parser.add_argument('-p', '--port', type=int, default=5572,
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     instance_check = filelock.FileLock(instance_lock_path)
     with instance_check.acquire(timeout=0):
         # Load account information
-        sa_jsons = glob.glob(os.path.join(args.service_account, '*.json'))
+        sa_jsons = glob.glob(os.path.join(args.service_accounts, '*.json'))
         if len(sa_jsons) == 0:
             logger.error('No Service Account Credentials JSON file exists.')
             exit(1)

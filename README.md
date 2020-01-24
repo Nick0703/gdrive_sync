@@ -51,4 +51,5 @@ to Google Drive or Team Drive**.
 
 3. Steps for `autorclone.py`
     
-    1) Run it manually in either `screen`, `tmux` or Add to crontab like `0 */1 * * * /usr/bin/python3 /path/to/autorclone.py -s remoteA -d remoteB`
+    1) Make sure that your service accounts json files are in the service_accounts folder
+    2) Run it manually in either `screen`, `tmux` or Add to crontab like `0 */1 * * * /usr/bin/python3 /path/to/autorclone.py -s remoteA -d remoteB`
