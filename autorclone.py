@@ -16,19 +16,16 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Move/Sync or Copy from source remote or local path "
                                                  "to destination remote.")
     parser.add_argument('-s', '--source', type=str, required=True,
-                        help='The source remote name or local path.')
+                        help='The source remote name or local file path.')
 
     parser.add_argument('-d', '--destination', type=str, required=True,
                         help='The destination remote name.')
 
     parser.add_argument('-sa', '--service_account', type=str, default="service_accounts",
-                        help='The folder path of json files for service accounts.')
+                        help="The folder path of the json files for service accounts without '/' at the end.")
 
     parser.add_argument('-p', '--port', type=int, default=5572,
-                        help='The port to run rclone rc. Set it to different one if you want to run other instance.')
-
-    parser.add_argument('-c', '--rclone_config', type=str,
-                        help='Config file path of rclone')
+                        help="The port # to run 'rclone rc' on. Set it to different one if you want to run another instance.")
 
     args = parser.parse_args()
     return args

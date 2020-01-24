@@ -16,7 +16,20 @@ to Google Drive or Team Drive**.
 
 > Chinese Version: [使用Service Account突破rclone单账号GD每日750G上传限制](//blog.rhilip.info/archives/1135/)
 
-1. setup `multifactory.py`
+## Usage
+
+**python3 autorclone.py -s remoteA -d remoteB**
+
+	-h, --help, Shows this help message and exit
+	-s SOURCE, --source SOURCE, The source remote name or local file path.
+	-d DESTINATION, --destination DESTINATION, The destination remote name.
+	-sa SERVICE_ACCOUNT, --service_account SERVICE_ACCOUNT, The folder path of the json files for the service accounts without '/' at the end.
+	-p PORT, --port PORT, The port number to run 'rclone rc' on. Set it to a different one if you want to run another instance.
+
+**Not used in this fork**
+<details>
+    <summary>1. setup `multifactory.py`</summary>
+    
     1) Head over to <https://console.developers.google.com/> and sign in with your account.
     2) Click "Library" on the left column, then click on "Select a project" at the top. Click on `NEW PROJECT` on the top-right corner of the new window.
     3) In the Project name section, input a project name of your choice. Wait till the project creation is done and then click on "Select a project" again at the top and select your project.
@@ -25,10 +38,17 @@ to Google Drive or Team Drive**.
     6) Find out how many projects you'll need. For example, a 100 TB job will take approximately 135 service accounts to make a full clone. Each project can have a maximum of 100 service accounts. In the case of the 100TB job, we will need 2 projects. `multifactory.py` conveniently includes a quick setup option. Run the following command `python3 multifactory.py --quick-setup N`. **Replace `N` with the amount of projects you need!**. If you want to only use new projects instead of existing ones, make sure to add `--new-only` flag. It will automatically start doing all the hard work for you.
     6a) Running this for the first time will prompt you to login with your Google account. Login with the same account you used for Step 1. If will then ask you to enable a service. Open the URL in your browser to enable it. Press Enter once it's enabled.
 
-2. Steps to add all the service accounts to the Shared Drive
+</details>
+
+**Not used in this fork**
+<details>
+    <summary>2. Steps to add all the service accounts to the Shared Drive</summary>
+    
     1) Once `multifactory.py` is done making all the accounts, open Google Drive and make a new Shared Drive to copy to.
     2) Run the following command `python3 masshare.py -d SDFolderID`. Replace the `SDFolderID` with `XXXXXXXXXXXXXXXXXXX`. The Folder ID can be obtained from the Shared Drive URL `https://drive.google.com/drive/folders/XXXXXXXXXXXXXXXXXXX`. `masshare.py` will start adding all your service accounts.
 
+</details>
+
 3. Steps for `autorclone.py`
-    1) Change script config at the beginning of file.
-    2) Run it manually in `screen` or Add to crontab like `0 */1 * * * /usr/bin/python3 /path/to/autorclone.py`
+    
+    1) Run it manually in either `screen`, `tmux` or Add to crontab like `0 */1 * * * /usr/bin/python3 /path/to/autorclone.py -s remoteA -d remoteB`
