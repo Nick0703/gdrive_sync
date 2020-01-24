@@ -3,28 +3,33 @@
 A python script lists Which Use Service Account to bypass the 750G upload file size limit on Google Drive
 based on [folderclone](https://github.com/Spazzlo/folderclone)
 
-Different from The exist project, This repo use [Rclone](https://rclone.org) to **transfer files from local disk 
-to Google Drive or Team Drive**.
+Different from The exist project, This repo use [Rclone](https://rclone.org) to **transfer files from either local disk 
+to Google Drive/Team Drive or Google Drive/Team Drive to Google Drive/Team Drive**.
 
 ## Requirements for using the scripts
 
 * Python ^3.4 **(Use 64-Bit Python only)**
-* Python Library which list in `requirements.txt`
+* Python Library which list in `requirements.txt, sudo python3 -m pip install -r requirements.txt`
 * Rclone ^1.41 (To support `service_account_credentials` feature )
-
-## Setup
-
-> Chinese Version: [使用Service Account突破rclone单账号GD每日750G上传限制](//blog.rhilip.info/archives/1135/)
+* Both the source and the destination remote should be in your rclone config file.
 
 ## Usage
 
-**python3 autorclone.py -s remoteA -d remoteB**
+**python3 autorclone.py -s remoteA: -d remoteB:**
 
 	-h, --help, Shows this help message and exit
 	-s SOURCE, --source SOURCE, The source remote name or local file path.
 	-d DESTINATION, --destination DESTINATION, The destination remote name.
 	-sa SERVICE_ACCOUNT, --service_account SERVICE_ACCOUNT, The folder path of the json files for the service accounts without '/' at the end.
 	-p PORT, --port PORT, The port number to run 'rclone rc' on. Set it to a different one if you want to run another instance.
+
+## Setup
+<details>
+    <summary>Original Chinese Version</summary>
+    
+    [使用Service Account突破rclone单账号GD每日750G上传限制](//blog.rhilip.info/archives/1135/)
+    
+</details>
 
 **Not used in this fork**
 <details>
@@ -48,6 +53,8 @@ to Google Drive or Team Drive**.
     2) Run the following command `python3 masshare.py -d SDFolderID`. Replace the `SDFolderID` with `XXXXXXXXXXXXXXXXXXX`. The Folder ID can be obtained from the Shared Drive URL `https://drive.google.com/drive/folders/XXXXXXXXXXXXXXXXXXX`. `masshare.py` will start adding all your service accounts.
 
 </details>
+
+**Used in this fork**
 
 3. Steps for `autorclone.py`
     
