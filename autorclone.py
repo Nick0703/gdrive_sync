@@ -12,6 +12,22 @@ import filelock
 
 from logging.handlers import RotatingFileHandler
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+
+    def disable(self):
+        self.HEADER = ''
+        self.OKBLUE = ''
+        self.OKGREEN = ''
+        self.WARNING = ''
+        self.FAIL = ''
+        self.ENDC = ''
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Move/Sync or Copy from source remote or local path "
                                                  "to destination remote.")
@@ -30,6 +46,13 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+# Time
+def print_during(time_start):
+    time_stop = time.time()
+    hours, rem = divmod((time_stop - time_start), 3600)
+    minutes, sec = divmod(rem, 60)
+    print(bcolors.OKGREEN + "\nTotal elapsed time: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), sec) + bcolors.ENDC)
+
 # Initialize the arguments    
 args = parse_args()
 
@@ -39,7 +62,7 @@ args = parse_args()
 # 1. Fill in what you are using or want to use. It can also be move, copy or sync ...
 # 2. It is recommended to add '--rc', it is fine if you don't add it, the script will automatically add it 
 # 3. To follow the output of rclone, run 'tail -f /tmp/rclone.log' in another terminal.
-cmd_rclone = "rclone sync {} {} --drive-server-side-across-configs --tpslimit 5 --max-backlog 2000000 --no-update-modtime -v --log-file /tmp/rclone.log".format(args.source, args.destination)
+cmd_rclone = "rclone sync {} {} --drive-server-side-across-configs --tpslimit 5 --max-backlog 2000000 --no-update-modtime -vv --log-file /tmp/rclone.log".format(args.source, args.destination)
 
 # Check rclone interval (s)
 check_after_start = 60  # After the rclone process has started, check the rclone status after xx seconds to prevent 'rclone rc core/stats' from exiting with an error.
@@ -206,6 +229,8 @@ if __name__ == '__main__':
                 cmd_rclone_current_sa = cmd_rclone + ' --drive-service-account-file %s' % (current_sa,)
 
             # Start a subprocess to rclone
+            time_start = time.time()
+            print("\n" + bcolors.OKGREEN + "Started at: {}".format(time.strftime("%H:%M:%S")) + bcolors.ENDC)
             proc = subprocess.Popen(cmd_rclone_current_sa, shell=True)
 
             # Wait so that rclone is fully up
@@ -234,6 +259,8 @@ if __name__ == '__main__':
                     if cnt_error > 3:
                         logger.error(err_msg + ' Force kill exist rclone process %s.' % proc.pid)
                         proc.kill()
+                        print(bcolors.OKBLUE + "\nThe rclone sync process has probably ended" + bcolors.ENDC)
+                        print_during(time_start) # Sync ended
                         exit(1)
 
                     logger.warning(err_msg + ' Wait %s seconds to recheck.' % check_interval)

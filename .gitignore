@@ -3,3 +3,4 @@ accounts/
 .idea/
 token.pickle
 autorclone.conf
+autorclone.pyc
