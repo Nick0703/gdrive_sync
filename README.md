@@ -12,6 +12,7 @@ to Google Drive/Team Drive or Google Drive/Team Drive to Google Drive/Team Drive
 * Python Library which list in `requirements.txt, sudo python3 -m pip install -r requirements.txt`
 * Rclone ^1.41 (To support `service_account_credentials` feature )
 * Both the source and the destination remote should be in your rclone config file.
+* Your service accounts json files should be in the service_accounts folder, you can also mention your own specific path.
 
 ## Usage
 
@@ -20,7 +21,7 @@ to Google Drive/Team Drive or Google Drive/Team Drive to Google Drive/Team Drive
 	-h, --help, Shows this help message and exit
 	-s SOURCE, --source SOURCE, The source remote name or local file path.
 	-d DESTINATION, --destination DESTINATION, The destination remote name.
-	-sa SERVICE_ACCOUNT, --service_account SERVICE_ACCOUNT, The folder path of the json files for the service accounts without '/' at the end.
+	-sa SERVICE_ACCOUNTS, --service_accounts SERVICE_ACCOUNTS, The folder path of the json files for the service accounts without '/' at the end.
 	-p PORT, --port PORT, The port number to run 'rclone rc' on. Set it to a different one if you want to run another instance.
 
 ## Setup
@@ -59,4 +60,4 @@ to Google Drive/Team Drive or Google Drive/Team Drive to Google Drive/Team Drive
 3. Steps for `autorclone.py`
     
     1) Make sure that your service accounts json files are in the service_accounts folder
-    2) Run it manually in either `screen`, `tmux` or Add to crontab like `0 */1 * * * /usr/bin/python3 /path/to/autorclone.py -s remoteA -d remoteB`
+    2) Run it manually in either `screen`, `tmux` or Add to crontab like `0 */12 * * * /usr/bin/python3 /path/to/autorclone.py -s remoteA -d remoteB`
