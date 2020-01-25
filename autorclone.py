@@ -28,6 +28,9 @@ class bcolors:
         self.FAIL = ''
         self.ENDC = ''
 
+# Get the script location
+script_location = os.path.dirname(os.path.abspath(__file__))
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Move/Sync or Copy from source remote or local path "
                                                  "to destination remote.")
@@ -37,7 +40,7 @@ def parse_args():
     parser.add_argument('-d', '--destination', type=str, required=True,
                         help='The destination remote name.')
 
-    parser.add_argument('-sa', '--service_accounts', type=str, default="service_accounts",
+    parser.add_argument('-sa', '--service_accounts', type=str, default=script_location + "/service_accounts",
                         help="The folder path of the json files for service accounts without '/' at the end.")
 
     parser.add_argument('-p', '--port', type=int, default=5572,
