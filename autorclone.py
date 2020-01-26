@@ -12,22 +12,6 @@ import filelock
 
 from logging.handlers import RotatingFileHandler
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-
-    def disable(self):
-        self.HEADER = ''
-        self.OKBLUE = ''
-        self.OKGREEN = ''
-        self.WARNING = ''
-        self.FAIL = ''
-        self.ENDC = ''
-
 # Get the script location
 script_location = os.path.dirname(os.path.abspath(__file__))
 
@@ -50,11 +34,12 @@ def parse_args():
     return args
 
 # Time
-def print_during(time_start):
+def get_TotalTime(time_start):
     time_stop = time.time()
     hours, rem = divmod((time_stop - time_start), 3600)
     minutes, sec = divmod(rem, 60)
-    print(bcolors.OKGREEN + "\nTotal elapsed time: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), sec) + bcolors.ENDC)
+    str_timeTotal = "Total elapsed time: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), sec)
+    return str_timeTotal 
 
 # Initialize the arguments    
 args = parse_args()
@@ -233,7 +218,8 @@ if __name__ == '__main__':
 
             # Start a subprocess to rclone
             time_start = time.time()
-            print("\n" + bcolors.OKGREEN + "Started at: {}".format(time.strftime("%H:%M:%S")) + bcolors.ENDC)
+            str_timeStart = "Started at: {}".format(time.strftime("%H:%M:%S"))
+            logger.info(str_timeStart)
             proc = subprocess.Popen(cmd_rclone_current_sa, shell=True)
 
             # Wait so that rclone is fully up
@@ -262,8 +248,8 @@ if __name__ == '__main__':
                     if cnt_error > 3:
                         logger.error(err_msg + ' Force kill exist rclone process %s.' % proc.pid)
                         proc.kill()
-                        print(bcolors.OKBLUE + "\nThe rclone sync process has probably ended" + bcolors.ENDC)
-                        print_during(time_start) # Sync ended
+                        logger.info("The rclone sync process has probably ended")
+                        logger.info(get_TotalTime(time_start)) # Sync ended
                         exit(1)
 
                     logger.warning(err_msg + ' Wait %s seconds to recheck.' % check_interval)
