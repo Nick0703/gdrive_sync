@@ -15,6 +15,7 @@ from logging.handlers import RotatingFileHandler
 # Get the script location
 script_location = os.path.dirname(os.path.abspath(__file__))
 
+# Arguments/Parameters for the script
 def parse_args():
     parser = argparse.ArgumentParser(description="Move/Sync or Copy from source remote or local path "
                                                  "to destination remote.")
@@ -33,16 +34,27 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+# Initialize the arguments    
+args = parse_args()
+
 # Time
 def get_TotalTime(time_start):
     time_stop = time.time()
     hours, rem = divmod((time_stop - time_start), 3600)
     minutes, sec = divmod(rem, 60)
     str_timeTotal = "Total elapsed time: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), sec)
-    return str_timeTotal 
+    return str_timeTotal
 
-# Initialize the arguments    
-args = parse_args()
+# Check the rclone log size, if bigger than 125MB then clear it.
+def getRcloneLogSize():
+    rclone_log = "/tmp/rclone.log"
+    if os.path.exists(rclone_log):
+        file_info = os.stat(rclone_log)
+        file_inMB = int(file_info.st_size / (1024 * 1024))
+        if file_inMB > 125:
+            tmpLog = open(rclone_log, 'w')
+            tmpLog.write("")
+            tmpLog.close()
 
 # ------------ Start of configuration items ------------------
 
@@ -219,7 +231,8 @@ if __name__ == '__main__':
             # Start a subprocess to rclone
             time_start = time.time()
             str_timeStart = "Started at: {}".format(time.strftime("%H:%M:%S"))
-            logger.info(str_timeStart)
+            logger.info(str_timeStart) # Log the start time
+            getRcloneLogSize() # Check the rclone log size
             proc = subprocess.Popen(cmd_rclone_current_sa, shell=True)
 
             # Wait so that rclone is fully up
