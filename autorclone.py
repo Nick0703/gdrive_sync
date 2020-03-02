@@ -62,11 +62,12 @@ def getRcloneLogSize():
 # 1. Fill in what you are using or want to use. It can also be move, copy or sync ...
 # 2. It is recommended to add '--rc', it is fine if you don't add it, the script will automatically add it 
 # 3. To follow the output of rclone, run 'tail -f /tmp/rclone.log' in another terminal.
-cmd_rclone = "rclone sync {} {} --drive-server-side-across-configs --tpslimit 5 --max-backlog 2000000 --no-update-modtime -vv --log-file /tmp/rclone.log".format(args.source, args.destination)
+cmd_rclone = "rclone sync {} {} --drive-server-side-across-configs --fast-list --tpslimit 5 --max-backlog 2000000 --no-update-modtime -vv --log-file /tmp/rclone.log".format(args.source, args.destination)
 
 # Check rclone interval (s)
 check_after_start = 60  # After the rclone process has started, check the rclone status after xx seconds to prevent 'rclone rc core/stats' from exiting with an error.
 check_interval = 10  # Main process, run a check for 'rclone rc core/stats' every xx seconds
+check_after_restart = 30
 
 # rclone account change monitoring conditions
 switch_sa_level = 1  # The number of rules to be met. The larger the number is, the stricter the switching conditions must be.
@@ -174,10 +175,17 @@ def force_kill_rclone_subproc_by_parent_pid(sh_pid):
             if child_proc.name().find('rclone') > -1:
                 logger.info('Force Killed rclone process which pid: %s' % child_proc.pid)
                 child_proc.kill()
+                time.sleep(check_after_restart)
 
 
 if __name__ == '__main__':
     instance_check = filelock.FileLock(instance_lock_path)
+    
+    # Start Time
+    time_start = time.time()
+    str_timeStart = "Started at: {}".format(time.strftime("%H:%M:%S"))
+    logger.info(str_timeStart) # Log the start time
+    
     with instance_check.acquire(timeout=0):
         # Load account information
         sa_jsons = glob.glob(os.path.join(args.service_accounts, '*.json'))
@@ -229,9 +237,6 @@ if __name__ == '__main__':
                 cmd_rclone_current_sa = cmd_rclone + ' --drive-service-account-file %s' % (current_sa,)
 
             # Start a subprocess to rclone
-            time_start = time.time()
-            str_timeStart = "Started at: {}".format(time.strftime("%H:%M:%S"))
-            logger.info(str_timeStart) # Log the start time
             getRcloneLogSize() # Check the rclone log size
             proc = subprocess.Popen(cmd_rclone_current_sa, shell=True)
 
