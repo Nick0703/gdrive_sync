@@ -67,7 +67,7 @@ cmd_rclone = "rclone sync {} {} --drive-server-side-across-configs --fast-list -
 # Check rclone interval (s)
 check_after_start = 60  # After the rclone process has started, check the rclone status after xx seconds to prevent 'rclone rc core/stats' from exiting with an error.
 check_interval = 10  # Main process, run a check for 'rclone rc core/stats' every xx seconds
-check_after_restart = 30
+check_after_restart = 30 # Wait xx seconds before restarting a new rclone process after switching to a new service account
 
 # rclone account change monitoring conditions
 switch_sa_level = 1  # The number of rules to be met. The larger the number is, the stricter the switching conditions must be.
@@ -147,19 +147,19 @@ def switch_sa_by_config(cur_sa):
     config.read(rclone_config_path)
 
     if rclone_dest_name not in config:
-        logger.critical('Can\'t find section %s in your rclone.conf (path: %s)', (rclone_dest_name, rclone_config_path))
+        logger.critical('Can\'t find section %s in your rclone.conf (path: %s)\n', (rclone_dest_name, rclone_config_path))
         exit(1)
 
     # Change SA information
     sa_in_config = config[rclone_dest_name].get('service_account_file', '')
     config[rclone_dest_name]['service_account_file'] = cur_sa
-    logger.info('Change rclone.conf SA information from %s to %s' % (sa_in_config, cur_sa))
+    logger.info('Change rclone.conf SA information from %s to %s\n' % (sa_in_config, cur_sa))
 
     # Save
     with open(rclone_config_path, 'w') as configfile:
         config.write(configfile)
 
-    logger.info('Change SA information in rclone.conf Success')
+    logger.info('Change SA information in rclone.conf Success\n')
 
 
 def get_email_from_sa(sa):
@@ -170,11 +170,12 @@ def get_email_from_sa(sa):
 def force_kill_rclone_subproc_by_parent_pid(sh_pid):
     if psutil.pid_exists(sh_pid):
         sh_proc = psutil.Process(sh_pid)
-        logger.info('Get The Process information - pid: %s, name: %s' % (sh_pid, sh_proc.name()))
+        logger.info('Get The Process information - pid: %s, name: %s\n' % (sh_pid, sh_proc.name()))
         for child_proc in sh_proc.children():
             if child_proc.name().find('rclone') > -1:
-                logger.info('Force Killed rclone process which pid: %s' % child_proc.pid)
+                logger.info('Force Killed rclone process which pid: %s\n' % child_proc.pid)
                 child_proc.kill()
+                logger.info('Waiting %s seconds before restarting\n' % check_after_restart)
                 time.sleep(check_after_restart)
 
 
@@ -183,39 +184,39 @@ if __name__ == '__main__':
     
     # Start Time
     time_start = time.time()
-    str_timeStart = "Started at: {}".format(time.strftime("%H:%M:%S"))
+    str_timeStart = "Started at: {}\n".format(time.strftime("%H:%M:%S"))
     logger.info(str_timeStart) # Log the start time
     
     with instance_check.acquire(timeout=0):
         # Load account information
         sa_jsons = glob.glob(os.path.join(args.service_accounts, '*.json'))
         if len(sa_jsons) == 0:
-            logger.error('No Service Account Credentials JSON file exists.')
+            logger.error('No Service Account Credentials JSON file exists.\n')
             exit(1)
 
         # Load instance configuration
         if os.path.exists(instance_config_path):
-            logger.info('Instance config exist, Load it...')
+            logger.info('Instance config exist, Load it...\n')
             config_raw = open(instance_config_path).read()
             instance_config = json.loads(config_raw)
 
         # Check the last recorded pid information
         if 'last_pid' in instance_config:
             last_pid = instance_config.get('last_pid')
-            logger.debug('Last PID exist, Start to check if it is still alive')
+            logger.debug('Last PID exist, Start to check if it is still alive\n')
             force_kill_rclone_subproc_by_parent_pid(last_pid)
 
         # Check the sa information recorded last time, if any, rearrange sa_jsons
         # So we start with a new 750G every time
         last_sa = instance_config.get('last_sa', '')
         if last_sa in sa_jsons:
-            logger.info('Get `last_sa` from config, resort list `sa_jsons`')
+            logger.info('Get `last_sa` from config, resort list `sa_jsons`\n')
             last_sa_index = sa_jsons.index(last_sa)
             sa_jsons = sa_jsons[last_sa_index:] + sa_jsons[:last_sa_index]
 
         # Fixed cmd_rclone to prevent missing `--rc`
         if cmd_rclone.find('--rc') == -1:
-            logger.warning('Lost important param `--rc` in rclone commands, AutoAdd it.')
+            logger.warning('Lost important param `--rc` in rclone commands, AutoAdd it.\n')
             cmd_rclone += ' --rc'
 
         # Rclone port number
@@ -223,10 +224,10 @@ if __name__ == '__main__':
 
         # Account switching cycle
         while True:
-            logger.info('Switch to next SA..........')
+            logger.info('Switch to next SA..........\n')
             last_sa = current_sa = get_next_sa_json_path(last_sa)
             write_config('last_sa', current_sa)
-            logger.info('Get SA information, file: %s , email: %s' % (current_sa, get_email_from_sa(current_sa)))
+            logger.info('Get SA information, file: %s , email: %s\n' % (current_sa, get_email_from_sa(current_sa)))
 
             # Switch Rclone command
             if switch_sa_way == 'config':
@@ -241,7 +242,7 @@ if __name__ == '__main__':
             proc = subprocess.Popen(cmd_rclone_current_sa, shell=True)
 
             # Wait so that rclone is fully up
-            logger.info('Wait %s seconds to full call rclone command: %s' % (check_after_start, cmd_rclone_current_sa))
+            logger.info('Wait %s seconds to full call rclone command: %s\n' % (check_after_start, cmd_rclone_current_sa))
             time.sleep(check_after_start)
 
             # Record pid information
@@ -249,7 +250,7 @@ if __name__ == '__main__':
             # proc.pid + 1 is usually the pid of the rclone process, but not sure
             # So be sure to kill rclone with force_kill_rclone_subproc_by_parent_pid (sh_pid)
             write_config('last_pid', proc.pid)
-            logger.info('Run Rclone command Success in pid %s' % (proc.pid + 1))
+            logger.info('Run Rclone command Success in pid %s\n' % (proc.pid + 1))
 
             # The main process uses `rclone rc core / stats` to check the child process
             cnt_error = 0
@@ -264,13 +265,13 @@ if __name__ == '__main__':
                     cnt_error = cnt_error + 1
                     err_msg = 'check core/stats failed for %s times,' % cnt_error
                     if cnt_error > 3:
-                        logger.error(err_msg + ' Force kill exist rclone process %s.' % proc.pid)
+                        logger.error(err_msg + ' Force kill exist rclone process %s.\n' % proc.pid)
                         proc.kill()
-                        logger.info("The rclone sync process has probably ended")
+                        logger.info("The rclone sync process has probably ended\n")
                         logger.info(get_TotalTime(time_start)) # Sync ended
                         exit(1)
 
-                    logger.warning(err_msg + ' Wait %s seconds to recheck.' % check_interval)
+                    logger.warning(err_msg + ' Wait %s seconds to recheck.\n' % check_interval)
                     time.sleep(check_interval)
                     continue  # check again
                 else:
@@ -334,7 +335,7 @@ if __name__ == '__main__':
 
                 # Greater than the set replacement level
                 if should_switch >= switch_sa_level:
-                    logger.info('Transfer Limit may hit (%s), Try to Switch..........' % switch_reason)
+                    logger.info('Transfer Limit may hit (%s), Try to Switch..........\n' % switch_reason)
                     force_kill_rclone_subproc_by_parent_pid(proc.pid)  # Kill the current rclone process
                     break  # Exit the main process monitoring cycle to switch to the next account
 
