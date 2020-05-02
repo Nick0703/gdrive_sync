@@ -34,7 +34,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-# Initialize the arguments    
+# Initialize the arguments
 args = parse_args()
 
 # Time
@@ -60,9 +60,9 @@ def getRcloneLogSize():
 
 # Rclone run command
 # 1. Fill in what you are using or want to use. It can also be move, copy or sync ...
-# 2. It is recommended to add '--rc', it is fine if you don't add it, the script will automatically add it 
+# 2. It is recommended to add '--rc', it is fine if you don't add it, the script will automatically add it
 # 3. To follow the output of rclone, run 'tail -f /tmp/rclone.log' in another terminal.
-cmd_rclone = "rclone sync {} {} --drive-server-side-across-configs --fast-list --tpslimit 5 --max-backlog 2000000 --no-update-modtime -vv --log-file /tmp/rclone.log".format(args.source, args.destination)
+cmd_rclone = "rclone sync {} {} --drive-server-side-across-configs --fast-list --tpslimit 5 --max-backlog 2000000 -vv --log-file /tmp/rclone.log".format(args.source, args.destination)
 
 # Check rclone interval (s)
 check_after_start = 60  # After the rclone process has started, check the rclone status after xx seconds to prevent 'rclone rc core/stats' from exiting with an error.
@@ -181,12 +181,12 @@ def force_kill_rclone_subproc_by_parent_pid(sh_pid):
 
 if __name__ == '__main__':
     instance_check = filelock.FileLock(instance_lock_path)
-    
+
     # Start Time
     time_start = time.time()
     str_timeStart = "Started at: {}\n".format(time.strftime("%H:%M:%S"))
     logger.info(str_timeStart) # Log the start time
-    
+
     with instance_check.acquire(timeout=0):
         # Load account information
         sa_jsons = glob.glob(os.path.join(args.service_accounts, '*.json'))
